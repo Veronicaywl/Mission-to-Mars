@@ -1,5 +1,4 @@
 # Import Splinter, BeautifulSoup, and Pandas
-from turtle import clear
 from splinter import Browser
 from bs4 import BeautifulSoup as soup
 import pandas as pd
@@ -22,7 +21,7 @@ def scrape_all():
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
         "last_modified": dt.datetime.now(),
-        "hemisphere": hemispheres(browser)
+        "hemispheres": hemispheres(browser)
     }
 
     # Stop webdriver and return data
@@ -99,37 +98,40 @@ def mars_facts():
     df.set_index('Description', inplace=True)
 
     # Convert dataframe into HTML format, add bootstrap
-    return df.to_html(classes="table table-striped")
+    return df.to_html()
 
-# # D1: Scrape High-Resolution Mars’ Hemisphere Images and Titles
+# # Deliverable 2
 
 # ### Hemispheres
 def hemispheres(browser):
-    url = 'https://marshemispheres.com/'
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
     browser.visit(url)
     hemisphere_image_urls = []
+
     for i in range(4):
         hemispheres = {}
      # Browse through each article
-        browser.find_by_css("a.product-item h3")[i].click()
-        element = browser.links.find_by_text("Sample").first
-        img_url = element["href"]
+        browser.find_by_css('a.product-item h3')[i].click()
+        element = browser.links.find_by_text('Sample').first
+        img_url = element['href']
         title = browser.find_by_css("h2.title").text
     # Store findings into a dictionary and append to list
-        hemispheres['img_url'] = img_url
-        hemispheres['title'] = title
+        hemispheres["img_url"] = img_url
+        hemispheres["title"] = title
         hemispheres_data = scrape_hemisphere(browser.html)
         hemisphere_image_urls.append(hemispheres_data)
     
     # Browse back to repeat
         browser.back()
+    
     return hemisphere_image_urls
 
 def scrape_hemisphere(html_text):
     hemi_soup = soup(html_text, "html.parser")
+
     try:
-        tile_elem = hemi_soup.find("h2", class_="title")
-        sample_elem = hemi_soup.find("a", text="Sample").a.get('href')
+        title_elem = hemi_soup.find("h2", class_="title").get_text()
+        sample_elem = hemi_soup.find("a", text="Sample").get("href")
     except AttributeError:
         title_elem = None
         sample_elem = None
